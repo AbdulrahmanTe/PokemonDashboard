@@ -6,12 +6,12 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import requests
-
+import pprint
 
 #https://pokemondashboard-8ux8z61yav3.streamlit.app/
 
-st.set_page_config(page_title="First Streamlit", page_icon="🔥")
-st.title("Pokemon Dashbaord")
+st.set_page_config(page_title="First Stream Lit", page_icon="🔥")
+st.title("Pokemon Dashboard")
 
 pokemonNumber=st.slider("Select a number",min_value=1,max_value=1025,step=1)
 #
@@ -74,8 +74,9 @@ result.columns = ['type', 'avg_height', 'avg_weight']
 
 
 new_row = {'type': pokemon["name"], 'avg_height': pokemon["height"], 'avg_weight': pokemon["weight"]}
-result=pd.concat([result,pd.DataFrame([new_row])])
+result=pd.concat([result,pd.DataFrame([new_row])], ignore_index=True)
 
+#result.set_index('type', inplace=True)
 st.write(result)
 
 st.write("How does your pokemon's Height compare to other pokemon")
