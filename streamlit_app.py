@@ -1,40 +1,82 @@
+import datetime
+import random
+
 import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
+import requests
 
-"""
-# Welcome to Streamlit!
+st.set_page_config(page_title="First Streamlit", page_icon="🔥")
+st.title("Pokemon Dashbaord")
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:.
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+pokemonNumber=st.slider("Select a number",min_value=1,max_value=1025,step=1)
+#
+url = f'https://pokeapi.co/api/v2/pokemon/{pokemonNumber}/'
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+#
+response = requests.get(url)
+pokemon = response.json()
+print(response)
 
-num_points = st.slider("Number of points in spiral", 1, 10000, 1100)
-num_turns = st.slider("Number of turns in spiral", 1, 300, 31)
+st.write(f"Pokemon Name: {pokemon['name']}")
+st.write(f"Pokemon Image:")
+st.image(pokemon['sprites']['front_default'])
 
-indices = np.linspace(0, 1, num_points)
-theta = 2 * np.pi * num_turns * indices
-radius = indices
+st.write(f"Pokemon height: {pokemon['height']}")
+st.write(f"Pokemon weight: {pokemon['weight']}")
+st.write(f"Pokemon Type: {pokemon['types'][0]['type']['name']}")
 
-x = radius * np.cos(theta)
-y = radius * np.sin(theta)
 
-df = pd.DataFrame({
-    "x": x,
-    "y": y,
-    "idx": indices,
-    "rand": np.random.randn(num_points),
-})
+moves = []
+for x in pokemon['abilities']:
+    moves.append(x['ability']['name'])
 
-st.altair_chart(alt.Chart(df, height=700, width=700)
-    .mark_point(filled=True)
-    .encode(
-        x=alt.X("x", axis=None),
-        y=alt.Y("y", axis=None),
-        color=alt.Color("idx", legend=None, scale=alt.Scale()),
-        size=alt.Size("rand", legend=None, scale=alt.Scale(range=[1, 150])),
-    ))
+moves_df = pd.DataFrame(moves, columns=['Moves'])
+moves_df.index = moves_df.index + 1
+
+st.table(moves_df)
+
+
+
+SpecialStats = []
+for x in pokemon['stats']:
+    SpecialStats.append({'Special Stat Type': x['stat']['name'], 'Value': x['base_stat']})
+
+stats_df = pd.DataFrame(SpecialStats)
+stats_df.index = stats_df.index + 1
+
+st.table(stats_df)
+
+pokedex = pd.DataFrame(columns = ['name', 'height', 'weight', 'type','move_count'])
+
+def get_details(poke_number):
+    try:
+        url = f'https://pokeapi.co/api/v2/pokemon/{poke_number}/'
+        response = requests.get(url)
+        pokemons = response.json()
+        return pokemons['name'], pokemons['height'], pokemons['weight'],pokemons['types'][0]['type']['name'], len(pokemons['moves'])
+    except:
+        return 'Error', np.NAN, np.NAN, np.NAN,np.NAN
+
+for poke_number in range(1, 50):
+    pokedex.loc[poke_number] = get_details(poke_number)
+
+st.write(pokedex)
+
+
+result = pokedex.groupby('type').agg({'height': 'mean', 'weight': 'mean'}).reset_index()
+
+result.columns = ['type', 'avg_height', 'avg_weight']
+
+
+new_row = {'type': pokemon["name"], 'avg_height': pokemon["height"], 'avg_weight': pokemon["weight"]}
+result=pd.concat([result,pd.DataFrame([new_row])])
+
+st.write(result)
+
+st.write("How does your pokemon's Height compare to other pokemon")
+st.bar_chart(data=result, x='type', y='avg_height', x_label='Type', y_label='Average Height')
+
+st.write("How does your pokemon's Weight compare to other pokemon")
+st.bar_chart(data=result, x='type', y='avg_weight', x_label='Type', y_label='Average Weight')
