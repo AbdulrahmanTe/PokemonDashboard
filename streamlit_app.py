@@ -79,8 +79,8 @@ result=pd.concat([result,pd.DataFrame([new_row])], ignore_index=True)
 #result.set_index('type', inplace=True)
 st.write(result)
 
-st.write("How does your pokemon's Height compare to other pokemon")
+st.write("How does your pokemon's Height compare to other types of Pokemon?")
 st.bar_chart(data=result, x='type', y='avg_height', x_label='Type', y_label='Average Height')
 
-st.write("How does your pokemon's Weight compare to other pokemon")
+st.write("How does your pokemon's Weight compare to other types of Pokemon?")
 st.bar_chart(data=result, x='type', y='avg_weight', x_label='Type', y_label='Average Weight')
