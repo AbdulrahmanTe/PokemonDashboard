@@ -40,7 +40,9 @@ moves_df.index = moves_df.index + 1
 
 st.table(moves_df)
 
+st.write(moves_df)
 
+st.dataframe(moves_df)
 
 SpecialStats = []
 for x in pokemon['stats']:
